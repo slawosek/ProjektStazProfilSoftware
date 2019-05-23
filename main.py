@@ -1,5 +1,6 @@
 import csv
 
+
 def pobranieListyZPliku(nazwa):
     lista = []
 
@@ -12,136 +13,153 @@ def pobranieListyZPliku(nazwa):
             line_count += 1
     return lista
 
-zawartoscPliku = pobranieListyZPliku('Liczba_osób_które_przystapiły_lub_zdały_egzamin_maturalny.csv')
-print(zawartoscPliku)
+
+class Matura():
+    def __init__(self):
+        self.calaTabela = pobranieListyZPliku('Liczba_osób_które_przystapiły_lub_zdały_egzamin_maturalny.csv')
+        self.terytorium = []
+        self.przystapiloZdalo = []
+        self.plec = []
+        self.rok = []
+        self.liczbaOsob = []
+        self.iloscEncji = len(self.calaTabela)
+        for row in self.calaTabela:
+            self.terytorium.append(row[0])
+            self.przystapiloZdalo.append(row[1])
+            self.plec.append(row[2])
+            self.rok.append(row[3])
+            self.liczbaOsob.append(row[4])
 
 
-def sredniaDlaWojewodztwa(rok, wojewodztwo):
-    sumaUczestnikow = 0
-    liczbaUczestnikowDlaRocznika = {}
+    def wyswietlanieCalosci(self):
+        for i in range(self.iloscEncji):
+            print(self.terytorium[i], self.przystapiloZdalo[i], self.plec[i], self.rok[i], self.liczbaOsob[i])
 
-    for row in zawartoscPliku:
-        if int(row[3]) <= rok and row[0] == wojewodztwo and row[1] == 'Przystąpiło':
-            sumaUczestnikow += int(row[4])
-            if row[3] in liczbaUczestnikowDlaRocznika.keys():
-                liczba = int(row[4])
-                liczbaUczestnikowDlaRocznika[row[0]] += liczba
+    def sredniaDlaWojewodztwa(self, rok, wojewodztwo):
+        sumaUczestnikow = 0
+        liczbaUczestnikowDlaRocznika = {}
+
+        for i in range(self.iloscEncji):
+            if int(self.rok[i]) <= rok and self.terytorium[i] == wojewodztwo and self.przystapiloZdalo[i] == 'Przystąpiło':
+                sumaUczestnikow += int(self.liczbaOsob[i])
+                if self.rok[i] in liczbaUczestnikowDlaRocznika.keys():
+                    liczba = int(self.liczbaOsob[i])
+                    liczbaUczestnikowDlaRocznika[self.terytorium[i]] += liczba
+                else:
+                    liczbaUczestnikowDlaRocznika[self.terytorium[i]] = int(self.liczbaOsob[i])
+
+        sredniaLiczbaUczestnikow = sumaUczestnikow / len(liczbaUczestnikowDlaRocznika)
+
+        return sredniaLiczbaUczestnikow
+
+    def zdawalnosc(self, wojewodztwo):
+        zdaliNaLata = {}
+        uczestniczyliNaLata = {}
+
+        for i in range(self.iloscEncji):
+            if self.terytorium[i] == wojewodztwo:
+                if self.przystapiloZdalo[i] == 'Przystąpiło':
+                    if self.rok[i] in uczestniczyliNaLata.keys():
+                        uczestniczyliNaLata[self.rok[i]] += int(self.liczbaOsob[i])
+                    else:
+                        uczestniczyliNaLata[self.rok[i]] = int(self.liczbaOsob[i])
+                elif self.przystapiloZdalo[i] == 'zdało':
+                    if self.rok[i] in zdaliNaLata.keys():
+                        zdaliNaLata[self.rok[i]] += int(self.liczbaOsob[i])
+                    else:
+                        zdaliNaLata[self.rok[i]] = int(self.liczbaOsob[i])
+
+        zdawalnoscWojewodztwa = {}
+
+        for klucz, iloscZdanych in zdaliNaLata.items():
+            if klucz in uczestniczyliNaLata.keys():
+                zdawalnoscWojewodztwa[klucz] = iloscZdanych / uczestniczyliNaLata[klucz] * 100
+
+        return zdawalnoscWojewodztwa
+
+    def wyswietlanieZdawalnosci(self, zdawalnoscWojewodztwa):
+        for klucz, procentZdanych in zdawalnoscWojewodztwa.items():
+            print(klucz + ": " + "{:.2f}".format(procentZdanych) + "%")
+
+    def listaWojewodztw(self):
+        self.setWojewodztw = set()
+        for encja in self.terytorium:
+            if encja != 'Polska':
+                self.setWojewodztw.add(encja)
+        return self.setWojewodztw
+
+    def najlepszeWojewodztwoWRoku(self, rok):
+        spisWojewodztw = self.listaWojewodztw()
+        najlepszyWynik = 0
+        najlepszeWojewodztwo = ''
+
+        for wojewodztwo in spisWojewodztw:
+            slownikZdawalnosc = self.zdawalnosc(wojewodztwo)
+            if str(rok) in slownikZdawalnosc.keys():
+                zdawalnoscDlaWojewodztwa = slownikZdawalnosc[str(rok)]
+                if zdawalnoscDlaWojewodztwa > najlepszyWynik:
+                    najlepszyWynik = zdawalnoscDlaWojewodztwa
+                    najlepszeWojewodztwo = wojewodztwo
+
+        return najlepszeWojewodztwo
+
+    def wyswietlanieNajlepszeWojewodztwo(self, rok):
+        print(str(rok) + " - " + self.najlepszeWojewodztwoWRoku(rok))
+
+    def najstarszyRocznik(self):
+        najstarszyrocznik = 8000  # Przyjmuję jako dostatecznie oddaloną zmienną
+        for rok in self.rok:
+            if int(rok) < najstarszyrocznik:
+                najstarszyrocznik = int(rok)
+        return najstarszyrocznik
+
+    def wykrywanieRegresji(self):
+        spisWojewodztw = self.listaWojewodztw()
+        najstarszyrocznik = self.najstarszyRocznik()
+
+        for wojewodztwo in spisWojewodztw:
+            slownikZdawalnosc = self.zdawalnosc(wojewodztwo)
+            for rok, procenty in slownikZdawalnosc.items():
+                poprzedniRok = int(rok) - 1
+                if poprzedniRok >= najstarszyrocznik:
+                    if slownikZdawalnosc[str(poprzedniRok)] > procenty:
+                        print(wojewodztwo + ": " + str(poprzedniRok) + "->" + rok)
+
+    def porownanieWojewodztw(self, pierwszeWojewodztwo, drugieWojewodztwo):
+        slownikPierwszego = self.zdawalnosc(pierwszeWojewodztwo)
+        slownikDrugiego = self.zdawalnosc(drugieWojewodztwo)
+        slownikNajlepszychZDwojki = {}
+
+        for rok, procenty in slownikPierwszego.items():
+            if slownikDrugiego[rok] > procenty:
+                slownikNajlepszychZDwojki[rok] = pierwszeWojewodztwo
+            elif slownikDrugiego[rok] < procenty:
+                slownikNajlepszychZDwojki[rok] = drugieWojewodztwo
             else:
-                liczbaUczestnikowDlaRocznika[row[0]] = int(row[4])
+                slownikNajlepszychZDwojki[rok] = 'Ta sama zdawalnosc'
 
-    sredniaLiczbaUczestnikow = sumaUczestnikow/len(liczbaUczestnikowDlaRocznika)
+        return slownikNajlepszychZDwojki
 
-    return sredniaLiczbaUczestnikow
+    def wyswietlaniePorownaniaWojewodztw(self, pierwszeWojewodztwo, drugieWojewodztwo):
+        slownikDoWypisania = self.porownanieWojewodztw(pierwszeWojewodztwo, drugieWojewodztwo)
+        for rok, wojewodztwo in slownikDoWypisania.items():
+            print(rok + "- " + wojewodztwo)
 
-def zdawalnosc(wojewodztwo):
-    zdaliNaLata = {}
-    uczestniczyliNaLata = {}
+matura = Matura()
+matura.wyswietlanieCalosci()
 
-    for row in zawartoscPliku:
-        if row[0] == wojewodztwo:
-            if row[1] == 'Przystąpiło':
-                if row[3] in uczestniczyliNaLata.keys():
-                    uczestniczyliNaLata[row[3]] += int(row[4])
-                else:
-                    uczestniczyliNaLata[row[3]] = int(row[4])
-            elif row[1] == 'zdało':
-                if row[3] in zdaliNaLata.keys():
-                    zdaliNaLata[row[3]] += int(row[4])
-                else:
-                    zdaliNaLata[row[3]] = int(row[4])
+#1 zadanie
+print(matura.sredniaDlaWojewodztwa(2015, "Pomorskie"))
 
-
-    zdawalnoscWojewodztwa = {}
-
-    for klucz,iloscZdanych in zdaliNaLata.items():
-        if klucz in uczestniczyliNaLata.keys():
-            zdawalnoscWojewodztwa[klucz] = iloscZdanych/uczestniczyliNaLata[klucz]*100
-
-    return zdawalnoscWojewodztwa
-
-def wyswietlanieZdawalnosci(zdawalnoscWojewodztwa):
-    for klucz, procentZdanych in zdawalnoscWojewodztwa.items():
-        print(klucz + ": " + "{:.2f}".format(procentZdanych) + "%")
-
-def listaWojewodztw():
-    setWojewodztw = set()
-    for row in zawartoscPliku:
-        if row[0] != 'Polska':
-            setWojewodztw.add(row[0])
-    return setWojewodztw
-
-def najlepszeWojewodztwoWRoku(rok):
-    spisWojewodztw = listaWojewodztw()
-    najlepszyWynik = 0
-    najlepszeWojewodztwo = ''
-
-    print(spisWojewodztw)
-    for wojewodztwo in spisWojewodztw:
-        slownikZdawalnosc = zdawalnosc(wojewodztwo)
-        if str(rok) in slownikZdawalnosc.keys():
-            zdawalnoscDlaWojewodztwa = slownikZdawalnosc[str(rok)]
-            if zdawalnoscDlaWojewodztwa > najlepszyWynik:
-                najlepszyWynik = zdawalnoscDlaWojewodztwa
-                najlepszeWojewodztwo = wojewodztwo
-
-    return najlepszeWojewodztwo
-
-def wyswietlanieNajlepszeWojewodztwo(rok):
-    print(str(rok) + " - " + najlepszeWojewodztwoWRoku(rok))
-
-def najstarszyRocznik():
-    najstarszyrocznik = 3000 #Przyjmuję jako dostatecznie oddaloną zmienną
-    for row in zawartoscPliku:
-        if int(row[3]) < najstarszyrocznik:
-            najstarszyrocznik = int(row[3])
-    return najstarszyrocznik
-
-
-def wykrywanieRegresji():
-    spisWojewodztw = listaWojewodztw()
-    najstarszyrocznik = najstarszyRocznik()
-
-    for wojewodztwo in spisWojewodztw:
-        slownikZdawalnosc = zdawalnosc(wojewodztwo)
-        for rok, procenty in slownikZdawalnosc.items():
-            poprzedniRok = int(rok)-1
-            if poprzedniRok >= najstarszyrocznik:
-                if slownikZdawalnosc[str(poprzedniRok)] > procenty:
-                    print(wojewodztwo + ": " + str(poprzedniRok) + "->" + rok)
-
-
-def porownanieWojewodztw(pierwszeWojewodztwo, drugieWojewodztwo):
-    slownikPierwszego = zdawalnosc(pierwszeWojewodztwo)
-    slownikDrugiego = zdawalnosc(drugieWojewodztwo)
-    slownikNajlepszychZDwojki = {}
-
-    for rok, procenty in slownikPierwszego.items():
-        if slownikDrugiego[rok] > procenty:
-            slownikNajlepszychZDwojki[rok] = pierwszeWojewodztwo
-        elif slownikDrugiego[rok] < procenty:
-            slownikNajlepszychZDwojki[rok] = drugieWojewodztwo
-        else:
-            slownikNajlepszychZDwojki[rok] = 'Ta sama zdawalnosc'
-
-    return slownikNajlepszychZDwojki
-
-def wyswietlaniePorownaniaWojewodztw(pierwszeWojewodztwo, drugieWojewodztwo):
-    slownikDoWypisania = porownanieWojewodztw(pierwszeWojewodztwo, drugieWojewodztwo)
-    for rok,wojewodztwo in slownikDoWypisania.items():
-        print(rok + "- " + wojewodztwo)
-
-# 1 zadanie
-print(sredniaDlaWojewodztwa(2015, "Podlaskie"))
-
-# 2 zadanie
-slownikZdawalnosc = zdawalnosc("Pomorskie")
-wyswietlanieZdawalnosci(slownikZdawalnosc)
+#2 zadanie
+slownikZdawalnosc = matura.zdawalnosc("Pomorskie")
+matura.wyswietlanieZdawalnosci(slownikZdawalnosc)
 
 #3 zadanie
-wyswietlanieNajlepszeWojewodztwo(2016)
+matura.wyswietlanieNajlepszeWojewodztwo(2016)
 
-#4 zadanie
-wykrywanieRegresji()
+#4zadanie
+matura.wykrywanieRegresji()
 
 #5 zadanie
-wyswietlaniePorownaniaWojewodztw('Dolnośląskie','Mazowieckie')
+matura.wyswietlaniePorownaniaWojewodztw('Dolnośląskie','Mazowieckie')
