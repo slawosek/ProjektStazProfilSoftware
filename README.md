@@ -18,14 +18,25 @@ Zdefiniowany jest w pliku interfejs.py. Stamtąd należy uruchomić program by w
 
 
 Dostępne komendy:
-- średnia - obliczenie średniej liczby osób, które przystąpiły do egzaminu dla danego województwa na przestrzeni lat, do podanego roku włącznie
-- zdawalność  -obliczenie procentowej zdawalności dla danego województwa na przestrzeni lat
-- najlepsze - odanie województwa o najlepszej zdawalności w konkretnym roku
-- regresja - wykrycie województw, które zanotowały regresję (mniejszy współczynnik zdawalności w kolejnym roku), jeżeli takowe znajdują się w zbiorze
-- porównanie - porównanie dwóch województw - dla podanych dwóch województw wypisanie, które z województw miało lepszą zdawalność w każdym dostępnym roku
+
+
+średnia - obliczenie średniej liczby osób, które przystąpiły do egzaminu dla danego województwa na przestrzeni lat, do podanego roku włącznie
+
+
+zdawalność  -obliczenie procentowej zdawalności dla danego województwa na przestrzeni lat
+
+
+najlepsze - odanie województwa o najlepszej zdawalności w konkretnym roku
+
+
+regresja - wykrycie województw, które zanotowały regresję (mniejszy współczynnik zdawalności w kolejnym roku), jeżeli takowe znajdują się w zbiorze
+
+
+porównanie - porównanie dwóch województw - dla podanych dwóch województw wypisanie, które z województw miało lepszą zdawalność w każdym dostępnym roku
 
 
 W powyższych instrukcjach potrzebne dane są sprawdzane pod względem poprawności. W kolejnych krokach będzie wyświetlane, co jest potrzebne.
+
 
 wyjście - zakończenie pracy programu
 
