@@ -17,6 +17,7 @@ def pobranieListyZPliku(nazwa):
 class Matura():
     def __init__(self):
         self.calaTabela = pobranieListyZPliku('Liczba_osób_które_przystapiły_lub_zdały_egzamin_maturalny.csv')
+        self.aktualnaTabela = self.calaTabela.copy()
         self.terytorium = []
         self.przystapiloZdalo = []
         self.plec = []
@@ -44,13 +45,18 @@ class Matura():
                 sumaUczestnikow += int(self.liczbaOsob[i])
                 if self.rok[i] in liczbaUczestnikowDlaRocznika.keys():
                     liczba = int(self.liczbaOsob[i])
-                    liczbaUczestnikowDlaRocznika[self.terytorium[i]] += liczba
+                    liczbaUczestnikowDlaRocznika[self.rok[i]] += liczba
                 else:
-                    liczbaUczestnikowDlaRocznika[self.terytorium[i]] = int(self.liczbaOsob[i])
+                    liczbaUczestnikowDlaRocznika[self.rok[i]] = int(self.liczbaOsob[i])
 
-        sredniaLiczbaUczestnikow = sumaUczestnikow / len(liczbaUczestnikowDlaRocznika)
+        print(len(liczbaUczestnikowDlaRocznika))
+        sredniaLiczbaUczestnikow = sumaUczestnikow/len(liczbaUczestnikowDlaRocznika)
 
         return sredniaLiczbaUczestnikow
+
+    def wyswietlanieSredniaDlaWojewodztwa(self, rok, wojewodztwo):
+        srednia = self.sredniaDlaWojewodztwa(rok, wojewodztwo)
+        print(srednia)
 
     def zdawalnosc(self, wojewodztwo):
         zdaliNaLata = {}
@@ -77,7 +83,10 @@ class Matura():
 
         return zdawalnoscWojewodztwa
 
-    def wyswietlanieZdawalnosci(self, zdawalnoscWojewodztwa):
+    def wyswietlanieZdawalnosci(self, wojewodztwo):
+
+        zdawalnoscWojewodztwa = self.zdawalnosc(wojewodztwo)
+
         for klucz, procentZdanych in zdawalnoscWojewodztwa.items():
             print(klucz + ": " + "{:.2f}".format(procentZdanych) + "%")
 
@@ -117,13 +126,20 @@ class Matura():
         spisWojewodztw = self.listaWojewodztw()
         najstarszyrocznik = self.najstarszyRocznik()
 
+        regresje = []
         for wojewodztwo in spisWojewodztw:
             slownikZdawalnosc = self.zdawalnosc(wojewodztwo)
             for rok, procenty in slownikZdawalnosc.items():
                 poprzedniRok = int(rok) - 1
                 if poprzedniRok >= najstarszyrocznik:
                     if slownikZdawalnosc[str(poprzedniRok)] > procenty:
-                        print(wojewodztwo + ": " + str(poprzedniRok) + "->" + rok)
+                        regresje.append([wojewodztwo,str(poprzedniRok),rok])
+        return regresje
+
+    def wyswietlanieWykrywanieRegresji(self):
+        regresje = self.wykrywanieRegresji()
+        for elem in regresje:
+            print(elem[0]+ ": " + str(elem[1]) + "->" + elem[2])
 
     def porownanieWojewodztw(self, pierwszeWojewodztwo, drugieWojewodztwo):
         slownikPierwszego = self.zdawalnosc(pierwszeWojewodztwo)
@@ -131,12 +147,13 @@ class Matura():
         slownikNajlepszychZDwojki = {}
 
         for rok, procenty in slownikPierwszego.items():
-            if slownikDrugiego[rok] > procenty:
+            if slownikDrugiego[rok] < procenty:
                 slownikNajlepszychZDwojki[rok] = pierwszeWojewodztwo
-            elif slownikDrugiego[rok] < procenty:
+            elif slownikDrugiego[rok] > procenty:
                 slownikNajlepszychZDwojki[rok] = drugieWojewodztwo
             else:
                 slownikNajlepszychZDwojki[rok] = 'Ta sama zdawalnosc'
+
 
         return slownikNajlepszychZDwojki
 
@@ -145,21 +162,34 @@ class Matura():
         for rok, wojewodztwo in slownikDoWypisania.items():
             print(rok + "- " + wojewodztwo)
 
-matura = Matura()
-matura.wyswietlanieCalosci()
+    def odswiezenieList(self):
+        self.terytorium.clear()
+        self.przystapiloZdalo.clear()
+        self.plec.clear()
+        self.rok.clear()
+        self.liczbaOsob.clear()
+        self.iloscEncji = len(self.aktualnaTabela)
+        for row in self.aktualnaTabela:
+            self.terytorium.append(row[0])
+            self.przystapiloZdalo.append(row[1])
+            self.plec.append(row[2])
+            self.rok.append(row[3])
+            self.liczbaOsob.append(row[4])
 
-#1 zadanie
-print(matura.sredniaDlaWojewodztwa(2015, "Pomorskie"))
+    def sortowaniePlec(self, plecWybrana):
 
-#2 zadanie
-slownikZdawalnosc = matura.zdawalnosc("Pomorskie")
-matura.wyswietlanieZdawalnosci(slownikZdawalnosc)
+        if plecWybrana == "mężczyźni" or plecWybrana == "kobiety":
+            self.aktualnaTabela.clear()
+            for i in range(len(self.plec)):
+                if self.plec[i] == plecWybrana:
+                    self.aktualnaTabela.append(self.calaTabela[i])
+            self.odswiezenieList()
 
-#3 zadanie
-matura.wyswietlanieNajlepszeWojewodztwo(2016)
+        elif plecWybrana == "wszyscy":
+            self.aktualnaTabela = self.calaTabela
+            self.odswiezenieList()
+        else:
+            print("Wybrano niepoprawna plec. Dostepne komendy: mężczyźni || kobiety || wszyscy")
 
-#4zadanie
-matura.wykrywanieRegresji()
 
-#5 zadanie
-matura.wyswietlaniePorownaniaWojewodztw('Dolnośląskie','Mazowieckie')
+
