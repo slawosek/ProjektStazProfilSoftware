@@ -41,7 +41,7 @@ W powyższych instrukcjach potrzebne dane są sprawdzane pod względem poprawno�
 wyjście - zakończenie pracy programu
 
 
-- wybranie płci - wybranie grupy, która będzie obsługiwana
+wybranie płci - wybranie grupy, która będzie obsługiwana
  - (domyślnie) wszyscy - wszystkie osoby
  - mężczyźni - będą przetwarzane dane tylko mężczyzn
  - kobiety - będą przetwarzane dane tylko kobiet
